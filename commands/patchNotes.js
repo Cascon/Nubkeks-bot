@@ -1,39 +1,45 @@
 const Discord = require("discord.js");
 const request = require("request");
+const rp = require('request-promise');
+const cheerio = require('cheerio');
+const schedule = require("node-schedule");
 
-const getScript = (url) => {
-    return new Promise((resolve, reject) => {
-        const http      = require('http'),
-              https     = require('https');
+module.exports.run = async(bot, message, args) => {
+  const options = {
+    uri: `https://heroespatchnotes.com/patch/`,
+    transform: function (body) {
+      return cheerio.load(body);
+    }
+  };
 
-        let client = http;
+  rp(options)
+    .then(($) => {
+      var postedLatest = "";
 
-        if (url.toString().indexOf("https") === 0) {
-            client = https;
+      var patchNotesLoop = schedule.scheduleJob('* * */1 * * *', function(){
+        var latestPatchDate = $('.timeline').children('li', this).attr('id');
+        var latestPatchLink = $(`#${latestPatchDate}`).children('.detail').children('div').next().children('a', this).attr('href');
+
+        var patchBoolean = false;
+        if (postedLatest !== latestPatchDate) {
+          patchBoolean = false;
+          postedLatest = latestPatchDate.toString();
+        } else if (postedLatest === latestPatchDate) {
+          patchBoolean = true;
         }
 
-        client.get(url, (resp) => {
-            let data = '';
-
-            // A chunk of data has been recieved.
-            resp.on('data', (chunk) => {
-                data += chunk;
-            });
-
-            // The whole response has been received. Print out the result.
-            resp.on('end', () => {
-                resolve(data);
-            });
-
-        }).on("error", (err) => {
-            reject(err);
-        });
-    });
-};
-
-(async (url) => {
-    console.log(await getScript(url));
-})('https://heroespatchnotes.com/patch/');
+        if (patchBoolean === false) {
+          return message.channel.send(`@here The latest HOTS patch notes are released! Check them out here at: ${latestPatchLink}`);
+        } else if (patchBoolean === true) {
+          // Do nothing
+          // return message.channel.send("If this shows after the patch notes then the timer + if statement are working as intended");
+        };
+      });
+    })
+  .catch((err) => {
+    console.log(err);
+  });
+}
 
 module.exports.help = {
 	name: "patchNotes"
