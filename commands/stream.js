@@ -1,19 +1,13 @@
 const Discord = require("discord.js");
 const request = require("request");
 
-const nubLive = "https://api.twitch.tv/kraken/streams/nubkeks?client_id=wgmissje9l67nel3xwxurzureger8k";
+// const nubLive = "https://api.twitch.tv/kraken/streams/nubkeks?client_id=wgmissje9l67nel3xwxurzureger8k";
 
 module.exports.run = async(bot, message, args) => {
   request ({
     url: 'https://api.twitch.tv/kraken/streams/nubkeks?client_id=wgmissje9l67nel3xwxurzureger8k',
     json: true
   }, (error, response, body) => {
-    var responseString = JSON.stringify(response);
-    console.log(responseString);
-    console.log('-----------');
-    console.log('-----------');
-    var bodyString = JSON.stringify(body);
-    console.log(bodyString);
     try {
     if (!error && response.body.stream !== null) {
       return message.channel.send("Nubkeks is currently live over at https://www.twitch.tv/nubkeks")
