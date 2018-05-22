@@ -14,7 +14,7 @@ var announcementLoop = schedule.scheduleJob('* */3 * * * *', () => {
       var postedAnnouncement = false;
       if (!error && response.body.stream !== null && postedAnnouncement === false) {
         // Post announcement
-        return message.channel.send("@here One and all nub is live over here! :PogChamp: :point_right: https://www.twitch.tv/nubkeks");
+        return message.channel.send("@here One and all nub is live over here! <:casconCringe:437671796284588032> :point_right: https://www.twitch.tv/nubkeks");
         // Set boolean to true when announcement has been posted to avoid repitition
         postedAnnouncement = true;
       } else if (response.body.stream === null && postedAnnouncement === true){
