@@ -5,7 +5,16 @@ const bot = new Discord.Client();
 const fs = require("fs");
 bot.commands = new Discord.Collection();
 
-
+var badWordsList = [
+  'nigger',
+	'nigga',
+	'coon',
+	'retard',
+	'retarded',
+	'nazi',
+	'jap',
+	'chink'
+];
 
 fs.readdir("./commands/", (err, files) => {
 	if(err) console.log(err);
@@ -33,6 +42,37 @@ bot.on("ready", async () =>  {
 bot.on("message", async message => {
 	if(message.channel.type === "dm")return;
 
+	let badWordChannel = message.guild.channels.find(`name`, "moderators");
+	if (!badWordChannel) return message.channel.send("Can't find Spam Channel");
+
+	var words = message.content.toLowerCase().trim().match(/\w+|\s+|[^\s\w]+/g);
+	try {
+		var containsBadWord = words.some(word => {
+	    return badWordsList.includes(word);
+		});
+	} catch (error) {
+		// Do nothing so error doesn't spam the console
+	};
+
+	try {
+		var badWordEmbed = new Discord.RichEmbed()
+		.setDescription("-BadWord-")
+		.setColor("#ec895")
+		.addField("Message Author", message.author)
+		.addField("Time", message.createdAt)
+		.addField("Message", message.toString());
+	} catch (error) {
+		//Do nothing so error doesn't spam console
+	}
+
+  if (containsBadWord) {
+		if (message.member.roles.find("name", "Bot") || message.member.roles.find("name", "My Most Trusted Advisers") || message.member.roles.find("name", "Nubkeks Bot") || message.member.roles.find("name", "Admin")) {
+			console.log("The user is one of the roles in which their message will NOT be deleted");
+		} else {
+			message.delete(1);
+	    badWordChannel.send(badWordEmbed);
+		}
+  }
 
 	let prefix = botconfig.prefix;
 	let messageArray = message.content.split(" ");
