@@ -94,7 +94,7 @@ bot.on("ready", async () =>  {
         if (patchBoolean.valueOf() === false) {
           return patchAutoChannel.send(`@here The latest HOTS patch notes are released! Check them out here at: ${latestPatchLink}`);
         } else if (patchBoolean.valueOf() === true) {
-          return patchAutoChannel.send(`there's no patch right now so memes sloth`);
+          // Do Nothing
         };
       });
     })
