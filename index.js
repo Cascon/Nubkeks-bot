@@ -3,6 +3,10 @@ const Discord = require(`discord.js`);
 const client = new Discord.Client();
 const bot = new Discord.Client();
 const fs = require("fs");
+const request = require("request");
+const schedule = require("node-schedule");
+const rp = require('request-promise');
+const cheerio = require('cheerio');
 bot.commands = new Discord.Collection();
 
 var badWordsList = [
@@ -38,12 +42,74 @@ fs.readdir("./commands/", (err, files) => {
 
 bot.on("ready", async () =>  {
 	console.log(`${bot.user.username} is now running`);
+
+// Beginning of the Automated twitch announcement
+
+  let twitchAutoChannel = bot.channels.get("450379772363538442");
+  if (!twitchAutoChannel) return message.channel.send("Can't find Twitch Auto Channel");
+
+  var postedAnnouncement = new Boolean(false);
+  var announcementLoop = schedule.scheduleJob('* */3 * * * *', () => {
+    request ({
+      url: 'https://api.twitch.tv/kraken/streams/nubkeks?client_id=wgmissje9l67nel3xwxurzureger8k',
+      json: true
+    }, (error, response, body) => {
+      if (!error && response.body.stream !== null && postedAnnouncement.valueOf() === false) {
+        postedAnnouncement = true;
+        return twitchAutoChannel.send(`@here <:casconCringe:437671796284588032> :point_right: ${response.body.stream.channel.status} --- ${response.body.stream.game} --- ${response.body.stream.channel.url}`);
+      } else if (response.body.stream === null && postedAnnouncement.valueOf() === true){
+        postedAnnouncement = false;
+      };
+    });
+  });
+
+// Beginning of the Automated patch notes announcement
+
+  let patchAutoChannel = bot.channels.get("450407190805872642");
+  if (!patchAutoChannel) return message.channel.send("Can't find Patch Auto Channel");
+
+  const patchNotesOptions = {
+    uri: `https://heroespatchnotes.com/patch/`,
+    transform: function (body) {
+      return cheerio.load(body);
+    }
+  };
+
+  rp(patchNotesOptions)
+    .then(($) => {
+      var postedLatest = "";
+
+      var patchNotesLoop = schedule.scheduleJob('* * */1 * * *', function(){
+        var latestPatchDate = $('.timeline').children('li', this).attr('id');
+        var latestPatchLink = $(`#${latestPatchDate}`).children('.detail').children('div').next().children('a', this).attr('href');
+
+        var patchBoolean = new Boolean(false);
+        if (postedLatest !== latestPatchDate) {
+          patchBoolean = false;
+          postedLatest = latestPatchDate.toString();
+        } else if (postedLatest === latestPatchDate) {
+          patchBoolean = true;
+        }
+
+        if (patchBoolean.valueOf() === false) {
+          return patchAutoChannel.send(`@here The latest HOTS patch notes are released! Check them out here at: ${latestPatchLink}`);
+        } else if (patchBoolean.valueOf() === true) {
+          return patchAutoChannel.send(`there's no patch right now so memes sloth`);
+        };
+      });
+    })
+  .catch((err) => {
+    console.log(err);
+  });
+
 });
+
 bot.on("message", async message => {
 	if(message.channel.type === "dm")return;
 
+// Beginning of the bad word filter
 	let badWordChannel = message.guild.channels.find(`name`, "moderators");
-	if (!badWordChannel) return message.channel.send("Can't find Spam Channel");
+	if (!badWordChannel) return message.channel.send("Can't find Bad Word Channel");
 
 	var words = message.content.toLowerCase().trim().match(/\w+|\s+|[^\s\w]+/g);
 	try {
