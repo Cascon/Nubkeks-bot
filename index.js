@@ -7,14 +7,13 @@ const request = require("request");
 const schedule = require("node-schedule");
 const rp = require('request-promise');
 const cheerio = require('cheerio');
+const antispam = require("discord-anti-spam");
 bot.commands = new Discord.Collection();
 
 var badWordsList = [
   'nigger',
 	'nigga',
 	'coon',
-	'retard',
-	'retarded',
 	'nazi',
 	'jap',
 	'chink'
@@ -56,7 +55,7 @@ bot.on("ready", async () =>  {
     }, (error, response, body) => {
       if (!error && response.body.stream !== null && postedAnnouncement.valueOf() === false) {
         postedAnnouncement = true;
-        return twitchAutoChannel.send(`@here <:casconCringe:437671796284588032> :point_right: ${response.body.stream.channel.status} --- ${response.body.stream.game} --- ${response.body.stream.channel.url}`);
+        // return twitchAutoChannel.send(` <:casconCringe:437671796284588032> :point_right: ${response.body.stream.channel.status} --- ${response.body.stream.game} --- ${response.body.stream.channel.url}`);
       } else if (response.body.stream === null && postedAnnouncement.valueOf() === true){
         postedAnnouncement = false;
       };
@@ -92,7 +91,7 @@ bot.on("ready", async () =>  {
         }
 
         if (patchBoolean.valueOf() === false) {
-          return patchAutoChannel.send(`@here The latest HOTS patch notes are released! Check them out here at: ${latestPatchLink}`);
+          // return patchAutoChannel.send(` The latest HOTS patch notes are released! Check them out here at: ${latestPatchLink}`);
         } else if (patchBoolean.valueOf() === true) {
           // Do Nothing
         };
@@ -102,6 +101,17 @@ bot.on("ready", async () =>  {
     console.log(err);
   });
 
+  // Beginning of the anti-spam module execution
+
+  antispam(bot, {
+    warnBuffer: 3, //Maximum amount of messages allowed to send in the interval time before getting warned.
+    maxBuffer: 6, // Maximum amount of messages allowed to send in the interval time before getting banned.
+    interval: 1000, // Amount of time in ms users can send a maximum of the maxBuffer variable before getting banned.
+    warningMessage: "Stop spamming or I'll whack your head off.", // Warning message send to the user indicating they are going to fast.
+    banMessage: "Has been banned for spamming, anyone else?", // Ban message, always tags the banned user in front of it.
+    maxDuplicatesWarning: 5,// Maximum amount of duplicate messages a user can send in a timespan before getting warned
+    maxDuplicatesBan: 10 // Maximum amount of duplicate messages a user can send in a timespan before getting banned
+  });
 });
 
 bot.on("message", async message => {
