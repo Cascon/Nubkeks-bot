@@ -10,6 +10,7 @@ const cheerio = require('cheerio');
 const antispam = require("discord-anti-spam");
 const ytdl = require('ytdl-core');
 const music = require('discord.js-musicbot-addon');
+const count = require('word-count');
 bot.commands = new Discord.Collection();
 
 music.start(bot, {
@@ -17,7 +18,8 @@ music.start(bot, {
   clearOnLeave: true,
   enableQueueStat: true,
   botAdmins: ["206537691066531840"],
-  thumbnailType: "high"
+  thumbnailType: "high",
+  disableLoop: true
 });
 
 var badWordsList = [
