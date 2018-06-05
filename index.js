@@ -8,7 +8,17 @@ const schedule = require("node-schedule");
 const rp = require('request-promise');
 const cheerio = require('cheerio');
 const antispam = require("discord-anti-spam");
+const ytdl = require('ytdl-core');
+const music = require('discord.js-musicbot-addon');
 bot.commands = new Discord.Collection();
+
+music.start(bot, {
+  youtubeKey: "AIzaSyAzIP2Iuby2lMuJELiugUF8NtOe2DFu0kw",
+  clearOnLeave: true,
+  enableQueueStat: true,
+  botAdmins: ["206537691066531840"],
+  thumbnailType: "high"
+});
 
 var badWordsList = [
   'nigger',
@@ -200,7 +210,16 @@ bot.on("message", async message => {
 	}
  }
 
+ function PlayNextStreamInQueue() {
+     ytAudioQueue.splice(0, 1);
 
+     if (ytAudioQueue.length != 0) {
+         playStream(
+           `${ytAudioQueue[0]}`,
+           {filter: 'audioonly'}
+         );
+     }
+ }
 
 
 
